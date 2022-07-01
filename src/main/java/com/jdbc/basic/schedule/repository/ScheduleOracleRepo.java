@@ -45,7 +45,6 @@ public class ScheduleOracleRepo implements ScheduleRepository {
 
     @Override
     public boolean remove(int scheduleId) {
-//        toTrash(findOne(scheduleId));
         String sql = "DELETE FROM schedule WHERE schedule_id = ?";
 
         try (Connection conn = Connect.makeConnection()) {

@@ -1,11 +1,14 @@
 package com.jdbc.basic.schedule.controller;
 
+import com.jdbc.basic.Connect;
 import com.jdbc.basic.schedule.domain.Schedule;
 import com.jdbc.basic.schedule.repository.ScheduleOracleRepo;
 import com.jdbc.basic.schedule.repository.ScheduleRepository;
 import com.jdbc.basic.schedule.repository.TrashOracleRepo;
 import com.jdbc.basic.schedule.repository.TrashRepository;
 
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -51,6 +54,10 @@ public class ScheduleController {
         return scheduleRepository.findOne(scheduleId);
     }
 
+    public Schedule findOneTrash(int scheduleId) {
+        return trashRepository.findOne(scheduleId);
+    }
+
     public List<Schedule> findScheduleByCategory(String category) {
         Map<Integer, Schedule> schedules = scheduleRepository.findByCategory(category);
         scheduleMap = schedules;
@@ -92,6 +99,15 @@ public class ScheduleController {
         return scheduleRepository.findOne(scheduleId) != null;
     }
 
+    public boolean hasTrash(int scheduleId) {
+        return trashRepository.findOne(scheduleId) != null;
+    }
+
+    public void recover(int scheduleId) {
+        insertSchedule(trashRepository.findOne(scheduleId));
+        trashRepository.remove(scheduleId);
+    }
+
     public void emptyTrash() {
         trashRepository.remove();
     }
@@ -106,5 +122,24 @@ public class ScheduleController {
         }
 
         return trashList;
+    }
+
+    public void removePreviousSchedule() {
+        // get current date
+        LocalDateTime localDateTime = LocalDateTime.now();
+        DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yy/MM/dd kk:mm");
+        System.out.println("현재 시각: " + localDateTime.format(dtf));
+
+        Map<Integer, Schedule> schedules = scheduleRepository.findAll();
+        trashMap = schedules;
+
+        for (Integer scheduleId : schedules.keySet()) {
+            if (schedules.get(scheduleId).getDateTime().compareTo(localDateTime.format(dtf)) < 0) {
+                System.out.println("삭제 일정: " + schedules.get(scheduleId).getScheduleName());
+                scheduleRepository.remove(scheduleId);
+                trashRepository.save(schedules.get(scheduleId));
+            }
+        }
+
     }
 }

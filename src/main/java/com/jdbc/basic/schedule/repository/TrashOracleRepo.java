@@ -67,7 +67,35 @@ public class TrashOracleRepo implements TrashRepository {
         } catch (SQLException e) {
             e.printStackTrace();
             return false;
-        }    }
+        }
+    }
+
+    @Override
+    public boolean remove(int scheduleId) {
+        String sql = "DELETE FROM trash WHERE schedule_id = ?";
+
+        try (Connection conn = Connect.makeConnection()) {
+            // transaction 처리
+            conn.setAutoCommit(false); // 자동 커밋 설정 끄기
+
+            PreparedStatement pstmt = conn.prepareStatement(sql);
+            pstmt.setInt(1, scheduleId);
+
+            int result = pstmt.executeUpdate();
+
+            if (result != 0) {
+                conn.commit();
+                return true;
+            } else {
+                conn.rollback();
+                return false;
+            }
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
 
     @Override
     public Map<Integer, Schedule> findAll() {
@@ -97,5 +125,33 @@ public class TrashOracleRepo implements TrashRepository {
         } catch (SQLException e) {
             e.printStackTrace();
             return Collections.emptyMap();
-        }    }
+        }
+    }
+
+    @Override
+    public Schedule findOne(int scheduleId) {
+        String sql = "SELECT * FROM trash WHERE schedule_id = ?";
+
+        try (Connection conn = Connect.makeConnection()) {
+
+            PreparedStatement pstmt = conn.prepareStatement(sql);
+            pstmt.setInt(1, scheduleId);
+
+            ResultSet rs = pstmt.executeQuery();
+            if (rs.next()) {
+                Schedule s = new Schedule(rs.getInt("schedule_id")
+                        , rs.getString("category")
+                        , rs.getString("schedule_name")
+                        , rs.getString("date_time")
+                        , rs.getString("location")
+                        , rs.getString("note"));
+                return s;
+            }
+            return null;
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
 }

@@ -3,12 +3,13 @@ package com.jdbc.basic.schedule.view;
 import com.jdbc.basic.schedule.controller.ScheduleController;
 import com.jdbc.basic.schedule.domain.Schedule;
 
-import java.util.List;
-import java.util.Scanner;
+import java.util.*;
 
 public class ScheduleMenu {
     private final ScheduleController controller;
     private final Scanner sc;
+
+    private List<String> categories = Arrays.asList("business", "finance", "health", "food", "personal", "fun");
 
     public ScheduleMenu() {
         controller = new ScheduleController();
@@ -76,9 +77,15 @@ public class ScheduleMenu {
                     break;
                 case 2:
                     sc.nextLine();
-                    System.out.print("조회할 카테고리: ");
-                    String category = sc.nextLine();
-                    findCategoryMenu(category);
+                    System.out.printf("카테고리: %s\n", categories);
+                    String category;
+                    while (true) {
+                        System.out.print("- 카테고리: ");
+                        category = sc.nextLine();
+                        if (categories.contains(category.toLowerCase())) break;
+                        else System.out.println("# 리스트에 있는 카테고리를 입력해 주세요.\n");
+                    }
+                    findCategoryMenu(category.toLowerCase());
                     break;
                 case 9:
                     System.out.println("메뉴로 돌아갑니다.");
@@ -95,6 +102,7 @@ public class ScheduleMenu {
             System.out.println("\n======= 휴지통 ========");
             System.out.println("# 1. 휴지통 보기");
             System.out.println("# 2. 휴지통 비우기");
+            System.out.println("# 3. 일정 복구");
             System.out.println("# 9. 메뉴로 돌아가기");
 
             int menu = inputN("\n메뉴 입력: ");
@@ -106,6 +114,9 @@ public class ScheduleMenu {
                 case 2:
                     emptyTrash();
                     break;
+                case 3:
+                    recoverTrash();
+                    break;
                 case 9:
                     System.out.println("메뉴로 돌아갑니다.");
                     return;
@@ -113,6 +124,18 @@ public class ScheduleMenu {
                     System.out.println("\n# 메뉴를 다시 입력하세요.");
             }
         }
+    }
+
+    private void recoverTrash() {
+        int id = inputN("\n복구할 일정의 아이디를 입력해 주세요 : ");
+        sc.nextLine();
+        if (controller.hasTrash(id)) {
+            controller.recover(id);
+            System.out.println("# 복구가 완료되었습니다.");
+        } else {
+            System.out.println("\n# 해당 스케쥴은 존재하지 않습니다.");
+        }
+
     }
 
     private void emptyTrash() {
@@ -136,18 +159,61 @@ public class ScheduleMenu {
     private void viewTrash() {
         List<Schedule> schedules = controller.viewTrash();
 
-        System.out.println("\n================================================================== 휴지통 리스트 ==================================================================");
-        System.out.printf("%10s%15s%30s%30s%30s%15s\n"
+        System.out.println("\n========================================================================================= 휴지통 리스트 =========================================================================================");
+        System.out.printf("%10s%15s%30s%30s%30s%50s\n"
                 , "아이디", "카테고리", "이름", "날짜/시간", "장소", "메모");
-        System.out.println("---------------------------------------------------------------------------------------------------------------------------------------------------");
+        System.out.println("------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------");
         for (Schedule s : schedules) {
-            System.out.printf("%10d%20s%30s%30s%30s%15s\n"
+            System.out.printf("%10d%20s%30s%30s%30s%50s\n"
                     , s.getScheduleId(), s.getCategory(), s.getScheduleName(), s.getDateTime(), s.getLocation(), s.getNote());
         }
     }
 
     // 5번 메뉴
     private void removeMenu() {
+        while (true) {
+            System.out.println("\n======= 스케쥴 정보 삭제 ========");
+            System.out.println("# 1. 아이디로 삭제하기");
+            System.out.println("# 2. 지난 일정 모두 삭제");
+            System.out.println("# 9. 메뉴로 돌아가기");
+
+            int menu = inputN("\n메뉴 입력: ");
+
+            switch (menu) {
+                case 1:
+                    removeWithId();
+                    break;
+                case 2:
+                    removePrevious();
+                    break;
+                case 9:
+                    System.out.println("메뉴로 돌아갑니다.");
+                    return;
+                default:
+                    System.out.println("\n# 메뉴를 다시 입력하세요.");
+            }
+        }
+    }
+
+    private void removePrevious() {
+        System.out.println("정말로 지난 일정을 모두 삭제하시겠습니까? Y/N");
+        sc.nextLine();
+        String choice = sc.nextLine().toLowerCase();
+
+        switch (choice) {
+            case "y":
+                controller.removePreviousSchedule();
+                break;
+            case "n":
+                break;
+            default:
+                System.out.println("\n# Y 또는 N으로 다시 입력하세요.");
+        }
+
+
+}
+
+    private void removeWithId() {
         System.out.println("\n# 삭제할 스케쥴 번호를 입력하세요!");
         int scheduleId = inputN(">>> ");
 
@@ -172,15 +238,15 @@ public class ScheduleMenu {
         if (controller.hasSchedule(scheduleId)) {
             sc.nextLine();
             System.out.println("# 수정할 정보들을 입력하세요.");
-            System.out.print("- Category: ");
+            System.out.print("- 카테고리: ");
             String category = sc.nextLine();
-            System.out.print("- Schedule Name: ");
+            System.out.print("- 스케줄 이름: ");
             String name = sc.nextLine();
-            System.out.print("- Date and Time: ");
+            System.out.print("- 날짜/시간: ");
             String dateTime = sc.nextLine();
-            System.out.print("- Location: ");
+            System.out.print("- 장소: ");
             String location = sc.nextLine();
-            System.out.print("- Note: ");
+            System.out.print("- 메모: ");
             String note = sc.nextLine();
 
             boolean flag = controller.updateSchedule(scheduleId, category, name, dateTime, location, note);
@@ -219,13 +285,12 @@ public class ScheduleMenu {
 
         List<Schedule> schedules = controller.findAllSchedules();
 
-        System.out.println("\n================================================================= 모든 스케쥴 정보 =================================================================");
-        System.out.printf("%10s%15s%30s%30s%30s%15s\n"
+        System.out.println("\n========================================================================================= 모든 스케쥴 정보=========================================================================================");
+        System.out.printf("%10s%15s%30s%30s%30s%50s\n"
                 , "아이디", "카테고리", "이름", "날짜/시간", "장소", "메모");
-        System.out.println("---------------------------------------------------------------------------------------------------------------------------------------------------");
-
+        System.out.println("------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------");
         for (Schedule s : schedules) {
-            System.out.printf("%10d%20s%30s%30s%30s%15s\n"
+            System.out.printf("%10d%20s%30s%30s%30s%50s\n"
                     , s.getScheduleId(), s.getCategory(), s.getScheduleName(), s.getDateTime(), s.getLocation(), s.getNote());
         }
 
@@ -234,13 +299,12 @@ public class ScheduleMenu {
     private void findCategoryMenu(String category) {
         List<Schedule> schedules = controller.findScheduleByCategory(category);
 
-        System.out.println("\n================================================================= 모든 스케쥴 정보 =================================================================");
-        System.out.printf("%10s%15s%30s%30s%30s%15s\n"
+        System.out.println("\n========================================================================================= 모든 스케쥴 정보=========================================================================================");
+        System.out.printf("%10s%15s%30s%30s%30s%50s\n"
                 , "아이디", "카테고리", "이름", "날짜/시간", "장소", "메모");
-        System.out.println("---------------------------------------------------------------------------------------------------------------------------------------------------");
-
+        System.out.println("------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------");
         for (Schedule s : schedules) {
-            System.out.printf("%10d%20s%30s%30s%30s%15s\n"
+            System.out.printf("%10d%20s%30s%30s%30s%50s\n"
                     , s.getScheduleId(), s.getCategory(), s.getScheduleName(), s.getDateTime(), s.getLocation(), s.getNote());
         }
     }
@@ -250,15 +314,21 @@ public class ScheduleMenu {
 
         System.out.println("\n# 스케쥴 정보 입력을 시작합니다.");
         sc.nextLine();
-        System.out.print("- Category: ");
-        String category = sc.nextLine();
-        System.out.print("- Schedule Name: ");
+        System.out.printf("카테고리: %s\n", categories);
+        String category;
+        while (true) {
+            System.out.print("- 카테고리: ");
+            category = sc.nextLine();
+            if (categories.contains(category.toLowerCase())) break;
+            else System.out.println("# 리스트에 있는 카테고리를 입력해 주세요.\n");
+        }
+        System.out.print("- 스케줄 이름: ");
         String name = sc.nextLine();
-        System.out.print("- Date and Time: ");
+        System.out.print("- 날짜/시간: ");
         String dateTime = sc.nextLine();
-        System.out.print("- Location: ");
+        System.out.print("- 장소: ");
         String location = sc.nextLine();
-        System.out.print("- Note: ");
+        System.out.print("- 메모: ");
         String note = sc.nextLine();
 
         Schedule sc = new Schedule();
