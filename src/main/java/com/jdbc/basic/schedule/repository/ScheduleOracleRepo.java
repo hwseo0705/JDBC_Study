@@ -2,6 +2,7 @@ package com.jdbc.basic.schedule.repository;
 
 import com.jdbc.basic.Connect;
 import com.jdbc.basic.schedule.domain.Schedule;
+import com.jdbc.basic.schedule.domain.User;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -14,7 +15,7 @@ import java.util.Map;
 public class ScheduleOracleRepo implements ScheduleRepository {
     @Override
     public boolean save(Schedule schedule) {
-        String sql = "INSERT INTO schedule VALUES (seq_schedule.nextval, ?, ?, ?, ?, ?)";
+        String sql = "INSERT INTO schedule VALUES (seq_schedule.nextval, ?, ?, ?, ?, ?, ?)";
 
         try (Connection conn = Connect.makeConnection()) {
             // transaction 처리
@@ -26,6 +27,7 @@ public class ScheduleOracleRepo implements ScheduleRepository {
             pstmt.setString(3, schedule.getDateTime());
             pstmt.setString(4, schedule.getLocation());
             pstmt.setString(5, schedule.getNote());
+            pstmt.setString(6, schedule.getUserId());
 
             int result = pstmt.executeUpdate();
 
@@ -72,7 +74,7 @@ public class ScheduleOracleRepo implements ScheduleRepository {
 
     @Override
     public boolean modify(Schedule schedule) {
-        String sql = "UPDATE schedule SET category = ?, schedule_name = ?, date_time = ?, location = ?, note = ? WHERE schedule_id = ?";
+        String sql = "UPDATE schedule SET category = ?, schedule_name = ?, date_time = ?, location = ?, note = ?, user_id = ? WHERE schedule_id = ?";
 
         try (Connection conn = Connect.makeConnection()) {
             // transaction 처리
@@ -84,7 +86,8 @@ public class ScheduleOracleRepo implements ScheduleRepository {
             pstmt.setString(3, schedule.getDateTime());
             pstmt.setString(4, schedule.getLocation());
             pstmt.setString(5, schedule.getNote());
-            pstmt.setInt(6, schedule.getScheduleId());
+            pstmt.setString(6, schedule.getUserId());
+            pstmt.setInt(7, schedule.getScheduleId());
 
             int result = pstmt.executeUpdate();
 
@@ -103,14 +106,15 @@ public class ScheduleOracleRepo implements ScheduleRepository {
     }
 
     @Override
-    public Map<Integer, Schedule> findAll() {
+    public Map<Integer, Schedule> findAll(User user) {
         Map<Integer, Schedule> scheduleMap = new HashMap<>();
 
-        String sql = "SELECT * FROM schedule ORDER BY date_time";
+        String sql = "SELECT * FROM schedule WHERE user_id = ?";
 
         try (Connection conn = Connect.makeConnection()) {
 
             PreparedStatement pstmt = conn.prepareStatement(sql);
+            pstmt.setString(1, user.getUserId());
 
             ResultSet rs = pstmt.executeQuery();
 
@@ -120,7 +124,8 @@ public class ScheduleOracleRepo implements ScheduleRepository {
                         , rs.getString("schedule_name")
                         , rs.getString("date_time")
                         , rs.getString("location")
-                        , rs.getString("note"));
+                        , rs.getString("note")
+                        , rs.getString("user_id"));
 
                 scheduleMap.put(s.getScheduleId(), s);
             }
@@ -149,7 +154,8 @@ public class ScheduleOracleRepo implements ScheduleRepository {
                         , rs.getString("schedule_name")
                         , rs.getString("date_time")
                         , rs.getString("location")
-                        , rs.getString("note"));
+                        , rs.getString("note")
+                        , rs.getString("user_id"));
                 return s;
             }
             return null;
@@ -161,7 +167,7 @@ public class ScheduleOracleRepo implements ScheduleRepository {
     }
 
     @Override
-    public Map<Integer, Schedule> findByCategory(String category) {
+    public Map<Integer, Schedule> findByCategory(String category, User user) {
         Map<Integer, Schedule> scheduleMap = new HashMap<>();
 
         String sql = "SELECT * FROM schedule WHERE category = ?";
@@ -174,14 +180,16 @@ public class ScheduleOracleRepo implements ScheduleRepository {
             ResultSet rs = pstmt.executeQuery();
 
             while (rs.next()) {
-                Schedule s = new Schedule(rs.getInt("schedule_id")
-                        , rs.getString("category")
-                        , rs.getString("schedule_name")
-                        , rs.getString("date_time")
-                        , rs.getString("location")
-                        , rs.getString("note"));
-
-                scheduleMap.put(s.getScheduleId(), s);
+                if (rs.getString("user_id").equals(user.getUserId())) {
+                    Schedule s = new Schedule(rs.getInt("schedule_id")
+                            , rs.getString("category")
+                            , rs.getString("schedule_name")
+                            , rs.getString("date_time")
+                            , rs.getString("location")
+                            , rs.getString("note")
+                            , rs.getString("user_id"));
+                    scheduleMap.put(s.getScheduleId(), s);
+                }
             }
 
             return scheduleMap;

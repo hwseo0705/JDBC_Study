@@ -16,5 +16,6 @@ public class Schedule {
     private String dateTime;
     private String location;
     private String note;
+    private String userId;
 
 }

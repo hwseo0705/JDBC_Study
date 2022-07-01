@@ -2,6 +2,7 @@ package com.jdbc.basic.schedule.repository;
 
 import com.jdbc.basic.Connect;
 import com.jdbc.basic.schedule.domain.Schedule;
+import com.jdbc.basic.schedule.domain.User;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -14,7 +15,7 @@ import java.util.Map;
 public class TrashOracleRepo implements TrashRepository {
     @Override
     public boolean save(Schedule schedule) {
-        String sql = "INSERT INTO trash VALUES (?, ?, ?, ?, ?, ?)";
+        String sql = "INSERT INTO trash VALUES (?, ?, ?, ?, ?, ?, ?)";
 
         try (Connection conn = Connect.makeConnection()) {
             // transaction 처리
@@ -27,6 +28,7 @@ public class TrashOracleRepo implements TrashRepository {
             pstmt.setString(4, schedule.getDateTime());
             pstmt.setString(5, schedule.getLocation());
             pstmt.setString(6, schedule.getNote());
+            pstmt.setString(7, schedule.getUserId());
 
             int result = pstmt.executeUpdate();
 
@@ -45,14 +47,15 @@ public class TrashOracleRepo implements TrashRepository {
     }
 
     @Override
-    public boolean remove() {
-        String sql = "DELETE FROM trash";
+    public boolean remove(User user) {
+        String sql = "DELETE FROM trash WHERE user_id = ?";
 
         try (Connection conn = Connect.makeConnection()) {
             // transaction 처리
             conn.setAutoCommit(false); // 자동 커밋 설정 끄기
 
             PreparedStatement pstmt = conn.prepareStatement(sql);
+            pstmt.setString(1, user.getUserId());
 
             int result = pstmt.executeUpdate();
 
@@ -71,8 +74,8 @@ public class TrashOracleRepo implements TrashRepository {
     }
 
     @Override
-    public boolean remove(int scheduleId) {
-        String sql = "DELETE FROM trash WHERE schedule_id = ?";
+    public boolean remove(int scheduleId, User user) {
+        String sql = "DELETE FROM trash WHERE schedule_id = ? AND user_id = ?";
 
         try (Connection conn = Connect.makeConnection()) {
             // transaction 처리
@@ -80,6 +83,8 @@ public class TrashOracleRepo implements TrashRepository {
 
             PreparedStatement pstmt = conn.prepareStatement(sql);
             pstmt.setInt(1, scheduleId);
+            pstmt.setString(1, user.getUserId());
+
 
             int result = pstmt.executeUpdate();
 
@@ -98,14 +103,15 @@ public class TrashOracleRepo implements TrashRepository {
     }
 
     @Override
-    public Map<Integer, Schedule> findAll() {
+    public Map<Integer, Schedule> findAll(User user) {
         Map<Integer, Schedule> scheduleMap = new HashMap<>();
 
-        String sql = "SELECT * FROM trash";
+        String sql = "SELECT * FROM trash WHERE user_id = ?";
 
         try (Connection conn = Connect.makeConnection()) {
 
             PreparedStatement pstmt = conn.prepareStatement(sql);
+            pstmt.setString(1, user.getUserId());
 
             ResultSet rs = pstmt.executeQuery();
 
@@ -115,8 +121,8 @@ public class TrashOracleRepo implements TrashRepository {
                         , rs.getString("schedule_name")
                         , rs.getString("date_time")
                         , rs.getString("location")
-                        , rs.getString("note"));
-
+                        , rs.getString("note")
+                        , rs.getString("user_id"));
                 scheduleMap.put(s.getScheduleId(), s);
             }
 
@@ -144,8 +150,8 @@ public class TrashOracleRepo implements TrashRepository {
                         , rs.getString("schedule_name")
                         , rs.getString("date_time")
                         , rs.getString("location")
-                        , rs.getString("note"));
-                return s;
+                        , rs.getString("note")
+                        , rs.getString("user_id"));                return s;
             }
             return null;
 
