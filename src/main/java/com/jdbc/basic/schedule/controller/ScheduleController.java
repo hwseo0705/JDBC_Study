@@ -15,6 +15,7 @@ import java.util.Map;
 public class ScheduleController {
 
     private static Map<Integer, Schedule> scheduleMap;
+    private static Map<Integer, Schedule> trashMap;
 
     private final ScheduleRepository scheduleRepository;
     private final TrashRepository trashRepository;
@@ -26,6 +27,7 @@ public class ScheduleController {
 
     static {
         scheduleMap = new HashMap<>();
+        trashMap = new HashMap<>();
     }
 
     public void insertSchedule(Schedule schedule) {
@@ -68,10 +70,29 @@ public class ScheduleController {
     }
 
     public boolean deleteSchedule(int scheduleId) {
+        Schedule target = scheduleRepository.findOne(scheduleId);
+        trashMap.put(target.getScheduleId(), target);
+        trashRepository.save(target);
         return scheduleRepository.remove(scheduleId);
     }
 
     public boolean hasSchedule(int scheduleId) {
         return scheduleRepository.findOne(scheduleId) != null;
+    }
+
+    public void emptyTrash() {
+        trashRepository.remove();
+    }
+
+    public List<Schedule> viewTrash() {
+        Map<Integer, Schedule> schedules = trashRepository.findAll();
+        trashMap = schedules;
+
+        List<Schedule> trashList = new ArrayList<>();
+        for (Integer scheduleId : schedules.keySet()) {
+            trashList.add(schedules.get(scheduleId));
+        }
+
+        return trashList;
     }
 }

@@ -47,6 +47,7 @@ public class ScheduleMenu {
                     removeMenu();
                     break;
                 case 6:
+                    trashMenu();
                     break;
                 case 9:
                     System.out.println("\n# 프로그램을 종료합니다.");
@@ -58,6 +59,62 @@ public class ScheduleMenu {
         }
 
 
+    }
+
+    private void trashMenu() {
+        while (true) {
+            System.out.println("\n======= 휴지통 ========");
+            System.out.println("# 1. 휴지통 보기");
+            System.out.println("# 2. 휴지통 비우기");
+            System.out.println("# 9. 메뉴로 돌아가기");
+
+            int menu = inputN("\n메뉴 입력: ");
+
+            switch (menu) {
+                case 1:
+                    viewTrash();
+                    break;
+                case 2:
+                    emptyTrash();
+                    break;
+                case 9:
+                    System.out.println("메뉴로 돌아갑니다.");
+                    return;
+                default:
+                    System.out.println("\n# 메뉴를 다시 입력하세요.");
+            }
+        }
+    }
+
+    private void emptyTrash() {
+        System.out.println("정말로 휴지통을 비우시겠습니까? Y/N");
+        sc.nextLine();
+        String choice = sc.nextLine().toLowerCase();
+
+        switch (choice) {
+            case "y":
+                controller.emptyTrash();
+                break;
+            case "n":
+
+                break;
+            default:
+                System.out.println("\n# Y 또는 N으로 다시 입력하세요.");
+        }
+
+    }
+
+    private void viewTrash() {
+        List<Schedule> schedules = controller.viewTrash();
+
+        System.out.println("\n================================================================== 휴지통 리스트 ==================================================================");
+        System.out.printf("%10s%15s%30s%30s%30s%15s\n"
+                , "아이디", "카테고리", "이름", "날짜/시간", "장소", "메모");
+        System.out.println("---------------------------------------------------------------------------------------------------------------------------------------------------");
+        for (Schedule s : schedules) {
+            System.out.printf("%10d%20s%30s%30s%30s%15s\n"
+                    , s.getScheduleId(), s.getCategory(), s.getScheduleName(), s.getDateTime(), s.getLocation(), s.getNote());
+        }
     }
 
     // 5번 메뉴
@@ -84,7 +141,7 @@ public class ScheduleMenu {
         int scheduleId = inputN(">>> ");
 
         if (controller.hasSchedule(scheduleId)) {
-
+            sc.nextLine();
             System.out.println("# 수정할 정보들을 입력하세요.");
             System.out.print("- Category: ");
             String category = sc.nextLine();
@@ -112,7 +169,7 @@ public class ScheduleMenu {
     // 3번 메뉴
     private void findOneMenu() {
         System.out.println("\n조회할 스케쥴 번호를 입력하세요!");
-        int scheduleId =  inputN(">>> ");
+        int scheduleId = inputN(">>> ");
 
         Schedule schedule = controller.findOneSchedule(scheduleId);
         if (schedule != null) {
@@ -133,13 +190,13 @@ public class ScheduleMenu {
 
         List<Schedule> schedules = controller.findAllSchedules();
 
-        System.out.println("\n=============== 모든 스케쥴 정보 ================");
-        System.out.printf("%15s%15s%15s%15s%15s%15s\n"
+        System.out.println("\n================================================================= 모든 스케쥴 정보 =================================================================");
+        System.out.printf("%10s%15s%30s%30s%30s%15s\n"
                 , "아이디", "카테고리", "이름", "날짜/시간", "장소", "메모");
-        System.out.println("----------------------------------------------");
+        System.out.println("---------------------------------------------------------------------------------------------------------------------------------------------------");
 
         for (Schedule s : schedules) {
-            System.out.printf("%15d%15s%15s%15s%15s%15s\n"
+            System.out.printf("%10d%20s%30s%30s%30s%15s\n"
                     , s.getScheduleId(), s.getCategory(), s.getScheduleName(), s.getDateTime(), s.getLocation(), s.getNote());
         }
 

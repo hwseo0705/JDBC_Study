@@ -55,7 +55,7 @@ public class TrashOracleRepo implements TrashRepository {
             PreparedStatement pstmt = conn.prepareStatement(sql);
 
             int result = pstmt.executeUpdate();
-            System.out.println(result);
+
             if (result != 0) {
                 conn.commit();
                 return true;

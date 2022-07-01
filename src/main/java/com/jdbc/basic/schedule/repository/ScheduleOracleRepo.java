@@ -85,7 +85,7 @@ public class ScheduleOracleRepo implements ScheduleRepository {
             pstmt.setString(3, schedule.getDateTime());
             pstmt.setString(4, schedule.getLocation());
             pstmt.setString(5, schedule.getNote());
-            pstmt.setInt(5, schedule.getScheduleId());
+            pstmt.setInt(6, schedule.getScheduleId());
 
             int result = pstmt.executeUpdate();
 
