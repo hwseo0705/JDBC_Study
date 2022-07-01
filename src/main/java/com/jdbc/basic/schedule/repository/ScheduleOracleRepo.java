@@ -161,4 +161,36 @@ public class ScheduleOracleRepo implements ScheduleRepository {
         }
     }
 
+    @Override
+    public Map<Integer, Schedule> findByCategory(String category) {
+        Map<Integer, Schedule> scheduleMap = new HashMap<>();
+
+        String sql = "SELECT * FROM schedule WHERE category = ?";
+
+        try (Connection conn = Connect.makeConnection()) {
+
+            PreparedStatement pstmt = conn.prepareStatement(sql);
+            pstmt.setString(1, category);
+
+            ResultSet rs = pstmt.executeQuery();
+
+            while (rs.next()) {
+                Schedule s = new Schedule(rs.getInt("schedule_id")
+                        , rs.getString("category")
+                        , rs.getString("schedule_name")
+                        , rs.getString("date_time")
+                        , rs.getString("location")
+                        , rs.getString("note"));
+
+                scheduleMap.put(s.getScheduleId(), s);
+            }
+
+            return scheduleMap;
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return Collections.emptyMap();
+        }
+    }
+
 }

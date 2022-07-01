@@ -21,7 +21,8 @@ public interface ScheduleRepository {
     // 특정 스케쥴 조회
     Schedule findOne(int scheduleId);
 
-    // 휴지통 불러오기
+    // 카테고리 별로 불러오기
+    Map<Integer, Schedule> findByCategory(String category);
 
 
 }

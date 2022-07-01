@@ -51,6 +51,18 @@ public class ScheduleController {
         return scheduleRepository.findOne(scheduleId);
     }
 
+    public List<Schedule> findScheduleByCategory(String category) {
+        Map<Integer, Schedule> schedules = scheduleRepository.findByCategory(category);
+        scheduleMap = schedules;
+
+        List<Schedule> scheduleList = new ArrayList<>();
+        for (Integer scheduleId : schedules.keySet()) {
+            scheduleList.add(schedules.get(scheduleId));
+        }
+
+        return scheduleList;
+    }
+
     public boolean updateSchedule(int scheduleId, String category, String name, String dateTime, String location, String note) {
         // 1. DB에서 해당 학생을 조회한다.
         Schedule target = findOneSchedule(scheduleId);

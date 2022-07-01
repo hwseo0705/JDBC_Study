@@ -38,7 +38,7 @@ public class ScheduleMenu {
                     findAllMenu();
                     break;
                 case 3:
-                    findOneMenu();
+                    findEachMenu();
                     break;
                 case 4:
                     modifyMenu();
@@ -60,6 +60,35 @@ public class ScheduleMenu {
 
 
     }
+
+    private void findEachMenu() {
+        while (true) {
+            System.out.println("\n======= 스케쥴 개별 조회 메뉴 ========");
+            System.out.println("# 1. 스케쥴 아이디로 조회하기");
+            System.out.println("# 2. 스케쥴 카테고리로 조회하기");
+            System.out.println("# 9. 메뉴로 돌아가기");
+
+            int menu = inputN("\n메뉴 입력: ");
+
+            switch (menu) {
+                case 1:
+                    findOneMenu();
+                    break;
+                case 2:
+                    sc.nextLine();
+                    System.out.print("조회할 카테고리: ");
+                    String category = sc.nextLine();
+                    findCategoryMenu(category);
+                    break;
+                case 9:
+                    System.out.println("메뉴로 돌아갑니다.");
+                    return;
+                default:
+                    System.out.println("\n# 메뉴를 다시 입력하세요.");
+            }
+        }
+    }
+
 
     private void trashMenu() {
         while (true) {
@@ -200,6 +229,20 @@ public class ScheduleMenu {
                     , s.getScheduleId(), s.getCategory(), s.getScheduleName(), s.getDateTime(), s.getLocation(), s.getNote());
         }
 
+    }
+
+    private void findCategoryMenu(String category) {
+        List<Schedule> schedules = controller.findScheduleByCategory(category);
+
+        System.out.println("\n================================================================= 모든 스케쥴 정보 =================================================================");
+        System.out.printf("%10s%15s%30s%30s%30s%15s\n"
+                , "아이디", "카테고리", "이름", "날짜/시간", "장소", "메모");
+        System.out.println("---------------------------------------------------------------------------------------------------------------------------------------------------");
+
+        for (Schedule s : schedules) {
+            System.out.printf("%10d%20s%30s%30s%30s%15s\n"
+                    , s.getScheduleId(), s.getCategory(), s.getScheduleName(), s.getDateTime(), s.getLocation(), s.getNote());
+        }
     }
 
     // 1번 메뉴
