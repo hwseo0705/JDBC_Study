@@ -318,8 +318,14 @@ public class ScheduleMenu {
         if (controller.hasSchedule(scheduleId, user)) {
             sc.nextLine();
             System.out.println("# 수정할 정보들을 입력하세요.");
-            System.out.print("- 카테고리: ");
-            String category = sc.nextLine();
+            System.out.printf("카테고리: %s\n", categories);
+            String category;
+            while (true) {
+                System.out.print("- 카테고리: ");
+                category = sc.nextLine();
+                if (categories.contains(category.toLowerCase())) break;
+                else System.out.println("# 리스트에 있는 카테고리를 입력해 주세요.\n");
+            }
             System.out.print("- 스케줄 이름: ");
             String name = sc.nextLine();
             System.out.print("- 날짜/시간: ");
@@ -419,6 +425,7 @@ public class ScheduleMenu {
         sc.setDateTime(dateTime);
         sc.setLocation(location);
         sc.setNote(note);
+        sc.setUserId(user.getUserId());
 
         controller.insertSchedule(sc);
 
